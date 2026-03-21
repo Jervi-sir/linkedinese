@@ -92,22 +92,14 @@ export default function Home() {
     [messages]
   );
 
-  const voiceSupported = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return Boolean(
-      (
-        window as Window & {
-          SpeechRecognition?: SpeechRecognitionCtor;
-          webkitSpeechRecognition?: SpeechRecognitionCtor;
-        }
-      ).SpeechRecognition ||
-      (
-        window as Window & {
-          webkitSpeechRecognition?: SpeechRecognitionCtor;
-        }
-      ).webkitSpeechRecognition
-    );
-  }, []);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+
+  useEffect(() => {
+    const element = composerRef.current;
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = `${Math.min(element.scrollHeight, 320)}px`;
+  }, [input]);
 
   const clearTimers = useCallback(() => {
     if (browserPollRef.current) {
@@ -194,6 +186,7 @@ export default function Home() {
     };
 
     recognitionRef.current = recognition;
+    setVoiceSupported(true);
 
     return () => {
       recognition.stop();
@@ -229,7 +222,7 @@ export default function Home() {
             window.clearInterval(intervalId);
             finishAccess(data.account_id);
           }
-        } catch (err) {
+        } catch {
           // ignore network errors while polling
         }
       }, 2000);
@@ -365,7 +358,7 @@ export default function Home() {
 
     try {
       await fetch("/api/auth", { method: "DELETE" });
-    } catch (err) {
+    } catch {
       // Ignore cleanup error
     }
 
