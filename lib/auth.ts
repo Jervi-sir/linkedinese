@@ -1,14 +1,10 @@
-import { existsSync, mkdirSync } from "fs";
-import { readFile, writeFile, unlink } from "fs/promises";
-import { join } from "path";
-import { homedir } from "os";
+import { cookies } from "next/headers";
 
 export const CLIENT_ID = "app_EMoamEEZ73f0CkXaXp7hrann";
 export const ISSUER = "https://auth.openai.com";
 export const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI || "http://localhost:1455/auth/callback";
 
-const TOKENS_DIR = join(homedir(), ".codex-chat");
-const TOKENS_FILE = join(TOKENS_DIR, "tokens.json");
+const COOKIE_NAME = "codex_tokens";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -41,21 +37,34 @@ interface IdTokenClaims {
 
 export async function loadTokens(): Promise<TokenStore | null> {
   try {
-    if (!existsSync(TOKENS_FILE)) return null;
-    return JSON.parse(await readFile(TOKENS_FILE, "utf-8")) as TokenStore;
+    const cookieStore = await cookies();
+    const val = cookieStore.get(COOKIE_NAME)?.value;
+    if (!val) return null;
+    return JSON.parse(val) as TokenStore;
   } catch {
     return null;
   }
 }
 
 export async function saveTokens(store: TokenStore): Promise<void> {
-  if (!existsSync(TOKENS_DIR)) mkdirSync(TOKENS_DIR, { recursive: true });
-  await writeFile(TOKENS_FILE, JSON.stringify(store, null, 2));
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set(COOKIE_NAME, JSON.stringify(store), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+  } catch {
+    // Ignored
+  }
 }
 
 export async function clearTokens(): Promise<void> {
   try {
-    await unlink(TOKENS_FILE);
+    const cookieStore = await cookies();
+    cookieStore.delete(COOKIE_NAME);
   } catch { }
 }
 
