@@ -10,12 +10,23 @@ type AccessMode = "idle" | "loading" | "browser";
 type MessageRole = "user" | "assistant";
 
 type StyleId = "story" | "authority" | "practical";
-type ModelId = "gpt-5.4" | "gpt-5.4-mini" | "gpt-5.3-codex";
+type ModelId = "gpt-5.4" | "gpt-5.4-mini" | "gpt-5.3-codex"
+  | 'gpt-5.2-codex' | 'gpt-5.2'
+  | 'gpt-5.1-codex-max' | 'gpt-5.1' | 'gpt-5.1-codex'
+  | 'gpt-5-codex' | 'gpt-5-codex-mini' | 'gpt-5';
 
 interface Message {
   id: string;
   role: MessageRole;
   content: string;
+}
+
+interface LimitErrorData {
+  type: string;
+  message: string;
+  plan_type: string;
+  resets_at: number;
+  resets_in_seconds: number;
 }
 
 interface RecognitionResultLike {
@@ -43,6 +54,14 @@ const MODELS: Array<{ id: ModelId; label: string; detail: string }> = [
   { id: "gpt-5.4", label: "GPT-5.4", detail: "Best for richer positioning" },
   { id: "gpt-5.4-mini", label: "GPT-5.4 Mini", detail: "Fast iteration loop" },
   { id: "gpt-5.3-codex", label: "GPT-5.3 Codex", detail: "Sharper structural polish" },
+  { id: "gpt-5.2-codex", label: "GPT-5.2 Codex", detail: "Balanced precision" },
+  { id: "gpt-5.2", label: "GPT-5.2", detail: "Standard high-perf" },
+  { id: "gpt-5.1-codex-max", label: "GPT-5.1 Codex Max", detail: "Peak technical depth" },
+  { id: "gpt-5.1-codex", label: "GPT-5.1 Codex", detail: "Reliable technical writing" },
+  { id: "gpt-5.1", label: "GPT-5.1", detail: "Stable generation" },
+  { id: "gpt-5-codex", label: "GPT-5 Codex", detail: "Foundational technical" },
+  { id: "gpt-5-codex-mini", label: "GPT-5 Codex Mini", detail: "Light technical polish" },
+  { id: "gpt-5", label: "GPT-5", detail: "The standard" },
 ];
 
 const STYLES: Array<{ id: StyleId; label: string; hint: string }> = [
@@ -62,6 +81,15 @@ function cleanIdea(text: string) {
   return text.replace(/\s+/g, " ").trim();
 }
 
+function formatTimeRemaining(seconds: number) {
+  if (seconds < 60) return `${seconds} seconds`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMins = minutes % 60;
+  return `${hours} hour${hours !== 1 ? 's' : ''} ${remainingMins > 0 ? `${remainingMins} min` : ''}`;
+}
+
 export default function Home() {
   const [stage, setStage] = useState<AppStage>("booting");
   const [accessMode, setAccessMode] = useState<AccessMode>("idle");
@@ -74,6 +102,7 @@ export default function Home() {
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [limitError, setLimitError] = useState<LimitErrorData | null>(null);
 
   const browserPollRef = useRef<number | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -248,6 +277,7 @@ export default function Home() {
 
     clearTimers();
     setError(null);
+    setLimitError(null);
     setCopyState("idle");
     setStreaming(true);
     setInput("");
@@ -331,7 +361,24 @@ export default function Home() {
       if (!nextContent) {
         setMessages((current) => current.filter((message) => message.id !== assistantMessage.id));
       }
-      setError(nextError instanceof Error ? nextError.message : "Unable to generate a draft.");
+
+      const errorMessage = nextError instanceof Error ? nextError.message : "Unable to generate a draft.";
+
+      if (errorMessage.includes("Codex API error 429:")) {
+        try {
+          const jsonStr = errorMessage.substring(errorMessage.indexOf("{"));
+          const parsed = JSON.parse(jsonStr);
+          if (parsed?.error?.type === "usage_limit_reached") {
+            setLimitError(parsed.error);
+          } else {
+            setError(errorMessage);
+          }
+        } catch (e) {
+          setError(errorMessage);
+        }
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setStreaming(false);
       window.setTimeout(() => composerRef.current?.focus(), 80);
@@ -364,6 +411,7 @@ export default function Home() {
     setListening(false);
     setCopyState("idle");
     setError(null);
+    setLimitError(null);
   }
 
   async function copyOutput() {
@@ -398,7 +446,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(194,120,48,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(121,157,127,0.2),_transparent_32%),linear-gradient(180deg,#f8f3ec_0%,#f2eadf_100%)] px-5 py-6 text-foreground sm:px-8 sm:py-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(194,120,48,0.18),_transparent_22%),radial-gradient(circle_at_bottom_right,_rgba(102,142,108,0.16),_transparent_28%),linear-gradient(180deg,#17120f_0%,#120f0d_48%,#0b0a09_100%)]">
       <div className="absolute inset-0 bg-[linear-gradient(rgba(96,72,45,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(96,72,45,0.05)_1px,transparent_1px)] bg-[size:44px_44px] opacity-40 dark:bg-[linear-gradient(rgba(214,198,176,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(214,198,176,0.04)_1px,transparent_1px)]" />
-      <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-7xl flex-col rounded-xl border border-black/8 bg-white/72 shadow-[0_28px_110px_rgba(77,53,24,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#171311]/78 dark:shadow-[0_28px_110px_rgba(0,0,0,0.45)]">
+      <div className="relative mx-auto flex min-h-[calc(97vh-3rem)] w-full max-w-7xl flex-col rounded-xl border border-black/8 bg-white/72 shadow-[0_28px_110px_rgba(77,53,24,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#171311]/78 dark:shadow-[0_28px_110px_rgba(0,0,0,0.45)]">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-black/8 px-5 py-4 dark:border-white/10 ">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-semibold tracking-[-0.03em] text-black dark:text-white">Linkedinese Studio</h1>
@@ -447,7 +495,7 @@ export default function Home() {
             </div>
           </section>
         ) : (
-          <section className="grid flex-1 gap-4 px-4 py-4 xl:grid-cols-2">
+          <section className="grid flex-1 gap-4 px-4 py-4 lg:grid-cols-2">
             <div className="flex flex-col rounded-xl border border-black/8 bg-[#1b1613] text-white shadow-sm">
               <div className="flex items-center justify-between border-b border-white/10 p-4">
                 <h3 className="text-lg font-semibold">Preview</h3>
@@ -558,6 +606,26 @@ export default function Home() {
               </div>
 
               {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+
+              {limitError && (
+                <div className="mt-4 flex flex-col gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                    Usage Limit Reached
+                  </div>
+                  <p className="text-sm leading-relaxed">{limitError.message}</p>
+                  <div className="grid grid-cols-2 gap-2 rounded-lg bg-red-500/5 p-3 text-xs">
+                    <div>
+                      <div className="mb-0.5 opacity-70">Plan Type</div>
+                      <div className="font-medium capitalize">{limitError.plan_type}</div>
+                    </div>
+                    <div>
+                      <div className="mb-0.5 opacity-70">Resets in</div>
+                      <div className="font-medium">{formatTimeRemaining(limitError.resets_in_seconds)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}
