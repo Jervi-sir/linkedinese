@@ -1,73 +1,77 @@
-# React + TypeScript + Vite
+# Linkedinese 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Linkedinese** is a minimalist, AI-powered writing studio designed to turn your rough notes, bullet points, or half-formed thoughts into polished, professional LinkedIn posts. 
 
-Currently, two official plugins are available:
+Gone are the days of staring at a blank screen. Just dump your thoughts, choose your vibe, and let AI do the heavy lifting.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Linkedinese Banner](https://images.unsplash.com/photo-1611944212129-29977ae1398c?q=80&w=2000&auto=format&fit=crop)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Features
 
-## Expanding the ESLint configuration
+- **Brain Dump to Post**: Convert messy notes or voice recordings into structured LinkedIn content.
+- **Voice Integration**: Don't feel like typing? Use the built-in voice-to-text feature to "talk" your post into existence.
+- **Customized Tone & Length**: 
+  - **Tones**: Professional, Casual, Inspiring, or Provocative.
+  - **Length**: Short (Punchy), Medium (Standard), or Long (Deep Dive/Story).
+- **Dark Mode by Default**: A sleek, premium dark-themed interface designed for focused writing.
+- **Live Preview**: See your generated post instantly and copy it with a single click.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🔒 Privacy & Security First
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Your data belongs to you. Linkedinese is built with a **local-first** approach to security:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Local API Storage**: Your Google Gemini API key is stored **exclusively in your browser's local storage**. 
+- **Hashing/Obfuscation**: For an extra layer of security, your key is hashed/obfuscated locally so it's not stored as plain text.
+- **No Middleman**: Your requests go directly from your browser to the Google Gemini API. Your key is **never** sent to any third-party server or backend.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Tech Stack
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- **Framework**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
+- **Icons**: [Hugeicons](https://hugeicons.com/)
+- **AI Engine**: [Google Gemini Pro API](https://ai.google.dev/)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [pnpm](https://pnpm.io/) (recommended) or npm/yarn
+- A [Google Gemini API Key](https://aistudio.google.com/app/apikey)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/linkedinese.git
+   cd linkedinese
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   pnpm run dev
+   ```
+
+4. **Open your browser**
+   Navigate to `http://localhost:5173` (or the port shown in your terminal).
+
+## 💡 How to Use
+
+1. **Add your API Key**: Click on the API key field and paste your Google Gemini key. It will be saved locally for future sessions.
+2. **Draft your Post**: Type your thoughts in the "Writing Studio" or click the microphone icon to speak.
+3. **Select Options**: Choose your preferred tone (e.g., *Inspiring*) and length (e.g., *Medium*).
+4. **Generate**: Click **"Generate Post"**.
+5. **Copy & Publish**: Your polished post will appear on the right. Copy it and paste it directly to LinkedIn!
+
+---
+
+Built with ❤️ by [Your Name/Jervi]

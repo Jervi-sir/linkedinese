@@ -101,7 +101,7 @@ function App() {
           </div>
         </header>
 
-        <main className="grid flex-1 gap-4 xl:grid-cols-[1.15fr_0.85fr] xl:gap-6">
+        <main className="grid flex-1 gap-4 xl:grid-cols-[1.15fr_0.85fr] xl:gap-4">
           <section className="space-y-4">
             <Alert className="border-[#f19754]/20 bg-[#f19754]/5 dark:border-[#f19754]/30 dark:bg-[#f19754]/10">
               <div className='flex flex-row items-center gap-2'>

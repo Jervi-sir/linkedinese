@@ -23,12 +23,28 @@ function writeStorage(key: string, value: string) {
   window.localStorage.removeItem(key)
 }
 
+function obfuscate(str: string) {
+  if (!str) return ''
+  return btoa(str.split('').reverse().join(''))
+}
+
+function deobfuscate(str: string) {
+  if (!str) return ''
+  try {
+    return atob(str).split('').reverse().join('')
+  } catch {
+    // If it's not base64/obfuscated (migration from plain text)
+    return str
+  }
+}
+
 export function loadStoredApiKey() {
-  return readStorage(apiKeyStorageKey)
+  const stored = readStorage(apiKeyStorageKey)
+  return deobfuscate(stored)
 }
 
 export function saveStoredApiKey(value: string) {
-  writeStorage(apiKeyStorageKey, value)
+  writeStorage(apiKeyStorageKey, obfuscate(value))
 }
 
 export function loadStoredModel() {
@@ -41,7 +57,7 @@ export function saveStoredModel(value: string) {
 
 export function loadStoredTheme() {
   const storedTheme = readStorage(themeStorageKey)
-  return storedTheme === 'dark' ? 'dark' : 'light'
+  return storedTheme === 'light' ? 'light' : 'dark'
 }
 
 export function saveStoredTheme(value: 'light' | 'dark') {
